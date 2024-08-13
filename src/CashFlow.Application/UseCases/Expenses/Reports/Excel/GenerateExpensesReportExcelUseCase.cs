@@ -1,16 +1,16 @@
-﻿using ClosedXML.Excel;
+﻿using CashFlow.Domain.Enums;
+using CashFlow.Domain.Extensions;
 using CashFlow.Domain.Reports;
-using DocumentFormat.OpenXml.Wordprocessing;
 using CashFlow.Domain.Repositories.Expenses;
-using CashFlow.Domain.Enums;
+using ClosedXML.Excel;
 
 namespace CashFlow.Application.UseCases.Expenses.Reports.Excel
 {
-    public class GenerateExpenseReportExcelUseCase : IGenerateExpenseReportExcelUseCase
+    public class GenerateExpensesReportExcelUseCase : IGenerateExpensesReportExcelUseCase
     {
         private readonly IExpensesReadOnlyRepository _repository;
 
-        public GenerateExpenseReportExcelUseCase(IExpensesReadOnlyRepository repository)
+        public GenerateExpensesReportExcelUseCase(IExpensesReadOnlyRepository repository)
         {
             _repository = repository;
         }
@@ -35,7 +35,7 @@ namespace CashFlow.Application.UseCases.Expenses.Reports.Excel
             {
                 worksheet.Cell($"A{raw}").Value = expense.Title;
                 worksheet.Cell($"B{raw}").Value = expense.Date;
-                worksheet.Cell($"C{raw}").Value = ConvertPaymentType(expense.PaymentType);
+                worksheet.Cell($"C{raw}").Value = expense.PaymentType.PaymentTypeToString();
                 
                 worksheet.Cell($"D{raw}").Value = expense.Amount;
                 worksheet.Cell($"D{raw}").Style.NumberFormat.Format = "- $ #,##0.00";
@@ -52,18 +52,6 @@ namespace CashFlow.Application.UseCases.Expenses.Reports.Excel
             workbook.SaveAs(file);
 
             return file.ToArray();
-        }
-
-        private string ConvertPaymentType(PaymentType paymentType)
-        {
-            return paymentType switch
-            {
-                PaymentType.Cash => "Cash",
-                PaymentType.CreditCard => "Credit Card",
-                PaymentType.DebitCard => "Debit Card",
-                PaymentType.EletronicTransfer => "Eletronic Transfer",
-                _ => string.Empty
-            };
         }
 
         private void InsertHeader(IXLWorksheet worksheet)
